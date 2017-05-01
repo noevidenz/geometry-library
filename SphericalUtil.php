@@ -39,8 +39,8 @@ class SphericalUtil {
         
         return MathUtil::wrap(rad2deg($heading), -180, 180);
     }
-    
-    
+
+
 /**
      * Returns the LatLng resulting from moving a distance from an origin
      * in the specified heading (expressed in degrees clockwise from north).
@@ -48,8 +48,8 @@ class SphericalUtil {
      * @param distance The distance to travel.
      * @param heading  The heading in degrees clockwise from north.
      */
-    public static function computeOffset($from, $distance, $heading) {
-        $distance /= MathUtil::EARTH_RADIUS;
+    public static function computeOffset($from, $distance, $heading, $radius = null) {
+        $distance /= $radius ?: MathUtil::EARTH_RADIUS;
         $heading = deg2rad($heading);
         // http://williams.best.vwh.net/avform.htm#LL
         $fromLat = deg2rad($from['lat']);
@@ -77,9 +77,9 @@ class SphericalUtil {
      * @param distance The distance travelled, in meters.
      * @param heading  The heading in degrees clockwise from north.
      */
-    public static function computeOffsetOrigin($to, $distance,  $heading) {
+    public static function computeOffsetOrigin($to, $distance,  $heading, $radius = null) {
         $heading = deg2rad($heading);
-        $distance /= MathUtil::EARTH_RADIUS;
+        $distance /= $radius ?: MathUtil::EARTH_RADIUS;
         // http://lists.maptools.org/pipermail/proj/2008-October/003939.html
         $n1 = cos($distance);
         $n2 = sin($distance) * cos($heading);
@@ -172,15 +172,15 @@ class SphericalUtil {
     /**
      * Returns the distance between two LatLngs, in meters.
      */
-    public static function computeDistanceBetween( $from, $to) {
-        return self::computeAngleBetween($from, $to) * MathUtil::EARTH_RADIUS;
+    public static function computeDistanceBetween( $from, $to, $radius = null) {
+        return self::computeAngleBetween($from, $to) * ($radius ?: MathUtil::EARTH_RADIUS);
     }  
     
     
     /**
      * Returns the length of the given path, in meters, on Earth.
      */
-    public static function computeLength($path) {
+    public static function computeLength($path, $radius = null) {
         if (count($path) < 2) {
             return 0;
         }
@@ -195,7 +195,7 @@ class SphericalUtil {
             $prevLat = $lat;
             $prevLng = $lng;
         }
-        return $length * MathUtil::EARTH_RADIUS;
+        return $length * ($radius ?: MathUtil::EARTH_RADIUS);
     }
     
     
@@ -204,8 +204,8 @@ class SphericalUtil {
      * @param path A closed path.
      * @return The path's area in square meters.
      */
-    public static function computeArea($path) {
-        return abs(self::computeSignedArea($path));
+    public static function computeArea($path, $radius = null) {
+        return abs(self::computeSignedArea($path, $radius));
     }    
     
     
@@ -216,8 +216,8 @@ class SphericalUtil {
      * @param path A closed path.
      * @return The loop's area in square meters.
      */
-    public static function computeSignedArea($path) {
-        return self::computeSignedAreaP($path, MathUtil::EARTH_RADIUS);
+    public static function computeSignedArea($path, $radius = null) {
+        return self::computeSignedAreaP($path, $radius ?: MathUtil::EARTH_RADIUS);
     }  
     
 /**
@@ -225,7 +225,7 @@ class SphericalUtil {
      * The computed area uses the same units as the radius squared.
      * Used by SphericalUtilTest.
      */
-    private static function computeSignedAreaP($path,  $radius) {
+    private static function computeSignedAreaP($path, $radius) {
         $size = count($path);
         if ($size < 3) { return 0; }
         $total = 0;
